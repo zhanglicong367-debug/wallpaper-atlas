@@ -1,104 +1,63 @@
-const seedWallpapers = [
+const SEARCH_QUERIES = [
+  "clash free subscription",
+  "clash proxy provider free",
+  "免费 clash 订阅",
+  "clash 节点 订阅",
+  "clash yaml subscription",
+];
+
+const CACHE_KEY = "clashAtlasSources";
+const FAVORITES_KEY = "clashAtlasFavorites";
+const THEME_KEY = "clashAtlasTheme";
+const REFRESH_INTERVAL_MS = 10 * 60 * 1000;
+
+const seedSources = [
   {
-    id: "seed-alpine-light",
-    title: "晨光雪岭",
-    category: "自然",
-    resolution: "5120 x 2880",
-    tone: "冷调",
-    source: "精选",
-    author: "Unsplash",
-    tags: ["山川", "雪", "5K"],
-    url: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=2400&q=85",
-    pageUrl: "https://unsplash.com/",
+    id: "seed-github-search-clash",
+    name: "GitHub Clash 免费订阅搜索",
+    category: "搜索入口",
+    description: "GitHub 上公开的 Clash 免费订阅相关项目搜索结果。",
+    url: "https://github.com/search?q=clash+free+subscription&type=repositories&s=updated&o=desc",
+    repoUrl: "https://github.com/search?q=clash+free+subscription&type=repositories&s=updated&o=desc",
+    tags: ["GitHub", "搜索", "实时"],
+    stars: null,
+    updatedAt: new Date().toISOString(),
+    source: "内置入口",
   },
   {
-    id: "seed-neon-city",
-    title: "霓虹雨夜",
-    category: "城市",
-    resolution: "3840 x 2160",
-    tone: "高对比",
-    source: "精选",
-    author: "Unsplash",
-    tags: ["夜景", "街道", "4K"],
-    url: "https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=2400&q=85",
-    pageUrl: "https://unsplash.com/",
-  },
-  {
-    id: "seed-soft-minimal",
-    title: "柔光几何",
-    category: "极简",
-    resolution: "3840 x 2400",
-    tone: "暖调",
-    source: "精选",
-    author: "Unsplash",
-    tags: ["留白", "桌面", "4K"],
-    url: "https://images.unsplash.com/photo-1557682250-33bd709cbe85?auto=format&fit=crop&w=2400&q=85",
-    pageUrl: "https://unsplash.com/",
-  },
-  {
-    id: "seed-beauty-portrait",
-    title: "自然光人像",
-    category: "美女",
-    resolution: "3840 x 2160",
-    tone: "人像",
-    source: "精选",
-    author: "Unsplash",
-    tags: ["美女", "人像", "自然光", "写真", "4K"],
-    url: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=2400&h=1350&q=85",
-    pageUrl: "https://unsplash.com/",
+    id: "seed-github-search-cn",
+    name: "GitHub 中文 Clash 订阅搜索",
+    category: "搜索入口",
+    description: "按中文关键词搜索公开免费 Clash 订阅项目。",
+    url: "https://github.com/search?q=%E5%85%8D%E8%B4%B9+clash+%E8%AE%A2%E9%98%85&type=repositories&s=updated&o=desc",
+    repoUrl: "https://github.com/search?q=%E5%85%8D%E8%B4%B9+clash+%E8%AE%A2%E9%98%85&type=repositories&s=updated&o=desc",
+    tags: ["中文", "免费", "订阅"],
+    stars: null,
+    updatedAt: new Date().toISOString(),
+    source: "内置入口",
   },
 ];
 
-const collectorTopics = [
-  {
-    category: "美女",
-    query: "beautiful woman portrait wallpaper fashion model",
-    tags: ["美女", "人像", "模特", "写真", "时尚"],
-    fallback: "woman,portrait,fashion",
-  },
-  {
-    category: "美女",
-    query: "female portrait natural light wallpaper",
-    tags: ["美女", "人像", "自然光", "清新", "摄影"],
-    fallback: "woman,portrait,natural",
-  },
-  { category: "自然", query: "landscape wallpaper mountains forest lake 4k", tags: ["自然", "山川", "森林", "湖泊", "4K"] },
-  { category: "城市", query: "city skyline night architecture wallpaper 4k", tags: ["城市", "建筑", "夜景", "天际线", "4K"] },
-  { category: "天空", query: "aurora stars clouds sky wallpaper 4k", tags: ["天空", "星空", "极光", "云层", "4K"] },
-  { category: "海洋", query: "ocean coast wave beach wallpaper 4k", tags: ["海洋", "海岸", "波浪", "沙滩", "4K"] },
-  { category: "极简", query: "minimal abstract gradient texture wallpaper 4k", tags: ["极简", "抽象", "纹理", "渐变", "4K"] },
-  { category: "工作区", query: "desk setup workspace computer wallpaper", tags: ["工作区", "桌面", "效率", "电脑", "室内"] },
-  { category: "摄影", query: "photography wallpaper cinematic light 4k", tags: ["摄影", "光影", "电影感", "高清"] },
-];
-
-const cachedWallpapers = JSON.parse(localStorage.getItem("wallpaperCollectedItems") || "[]");
+const cachedSources = JSON.parse(localStorage.getItem(CACHE_KEY) || "[]");
 
 const state = {
   category: "全部",
   query: "",
-  page: Number(localStorage.getItem("wallpaperCollectorPage") || "1"),
   loading: false,
-  autoRounds: 0,
-  wallpapers: [...seedWallpapers, ...cachedWallpapers],
-  favorites: new Set(JSON.parse(localStorage.getItem("wallpaperFavorites") || "[]")),
+  sources: mergeSources([...seedSources, ...cachedSources]),
+  favorites: new Set(JSON.parse(localStorage.getItem(FAVORITES_KEY) || "[]")),
+  lastUpdated: localStorage.getItem("clashAtlasLastUpdated") || "",
 };
 
-const gallery = document.querySelector("#gallery");
+const sourceGrid = document.querySelector("#sourceGrid");
 const categoryFilters = document.querySelector("#categoryFilters");
 const searchInput = document.querySelector("#searchInput");
 const resultCount = document.querySelector("#resultCount");
 const totalCount = document.querySelector("#totalCount");
 const favoriteCount = document.querySelector("#favoriteCount");
+const lastUpdated = document.querySelector("#lastUpdated");
 const collectorStatus = document.querySelector("#collectorStatus");
-const loadSentinel = document.querySelector("#loadSentinel");
-const previewDialog = document.querySelector("#previewDialog");
-const previewImage = document.querySelector("#previewImage");
-const previewTitle = document.querySelector("#previewTitle");
-const previewCategory = document.querySelector("#previewCategory");
-const previewMeta = document.querySelector("#previewMeta");
-const openSource = document.querySelector("#openSource");
-const copyLink = document.querySelector("#copyLink");
-const closePreview = document.querySelector("#closePreview");
+const refreshButton = document.querySelector("#refreshButton");
 const themeToggle = document.querySelector("#themeToggle");
 
 function syncIcons() {
@@ -107,210 +66,152 @@ function syncIcons() {
   }
 }
 
+function mergeSources(items) {
+  const byId = new Map();
+  for (const item of items) {
+    byId.set(item.id, { ...byId.get(item.id), ...item });
+  }
+  return [...byId.values()].sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
+}
+
+function saveSources() {
+  const dynamicSources = state.sources.filter((item) => !item.id.startsWith("seed-")).slice(0, 120);
+  localStorage.setItem(CACHE_KEY, JSON.stringify(dynamicSources));
+}
+
 function saveFavorites() {
-  localStorage.setItem("wallpaperFavorites", JSON.stringify([...state.favorites]));
+  localStorage.setItem(FAVORITES_KEY, JSON.stringify([...state.favorites]));
 }
 
 function categories() {
-  return ["全部", ...new Set(state.wallpapers.map((item) => item.category)), "收藏"];
+  return ["全部", "订阅项目", "搜索入口", "今日更新", "已收藏"];
 }
 
-function cleanTitle(text, fallback) {
-  return (text || fallback)
-    .replace(/\.(jpg|jpeg|png|webp|tif|tiff)$/i, "")
-    .replace(/[_-]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 48);
+function formatDate(value) {
+  if (!value) return "--";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "--";
+  return date.toLocaleDateString("zh-CN", { month: "2-digit", day: "2-digit" });
 }
 
-function wallpaperTone(width, height) {
-  const ratio = width / Math.max(height, 1);
-  if (ratio >= 1.7) return "宽屏";
-  if (ratio >= 1.45) return "桌面";
-  return "竖图裁切";
+function formatTime(value) {
+  if (!value) return "--";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "--";
+  return date.toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
 }
 
-function resolutionTags(width, height) {
-  const tags = ["高清"];
-  if (width >= 3840 || height >= 2160) tags.push("4K");
-  if (width >= 5120 || height >= 2880) tags.push("5K");
-  if (width / Math.max(height, 1) >= 1.7) tags.push("宽屏");
-  if (height > width) tags.push("竖图");
-  return tags;
+function isToday(value) {
+  const date = new Date(value);
+  const now = new Date();
+  return (
+    date.getFullYear() === now.getFullYear() &&
+    date.getMonth() === now.getMonth() &&
+    date.getDate() === now.getDate()
+  );
 }
 
-function titleTags(title) {
-  const text = title.toLowerCase();
-  const map = [
-    ["portrait", "人像"],
-    ["woman", "美女"],
-    ["female", "美女"],
-    ["fashion", "时尚"],
-    ["model", "模特"],
-    ["mountain", "山川"],
-    ["forest", "森林"],
-    ["city", "城市"],
-    ["night", "夜景"],
-    ["sky", "天空"],
-    ["ocean", "海洋"],
-    ["beach", "沙滩"],
-    ["abstract", "抽象"],
-    ["minimal", "极简"],
-    ["desk", "桌面"],
-    ["workspace", "工作区"],
-  ];
-  return map.filter(([key]) => text.includes(key)).map(([, tag]) => tag);
+function repoToSource(repo) {
+  const homepage = normalizeUrl(repo.homepage);
+  const repoUrl = repo.html_url;
+  const text = `${repo.name} ${repo.description || ""}`.toLowerCase();
+  const tags = ["GitHub", repo.language, repo.license?.spdx_id]
+    .filter(Boolean)
+    .concat(text.includes("yaml") || text.includes("yml") ? ["YAML"] : [])
+    .concat(text.includes("sub") || text.includes("订阅") ? ["订阅"] : [])
+    .concat(text.includes("free") || text.includes("免费") ? ["免费"] : []);
+
+  return {
+    id: `repo-${repo.full_name.toLowerCase()}`,
+    name: repo.full_name,
+    category: "订阅项目",
+    description: repo.description || "公开 Clash 相关仓库，请进入 README 查看订阅地址、更新时间和使用说明。",
+    url: homepage || repoUrl,
+    repoUrl,
+    tags: [...new Set(tags)].slice(0, 6),
+    stars: repo.stargazers_count,
+    updatedAt: repo.updated_at,
+    source: "GitHub Search",
+  };
 }
 
-function uniqueTags(tags) {
-  return [...new Set(tags.filter(Boolean))].slice(0, 9);
+function normalizeUrl(value) {
+  if (!value || typeof value !== "string") return "";
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return "";
 }
 
-function saveCollectedWallpapers() {
-  const collected = state.wallpapers
-    .filter((item) => !item.id.startsWith("seed-"))
-    .slice(-240);
-  localStorage.setItem("wallpaperCollectedItems", JSON.stringify(collected));
-}
-
-function upsertWallpapers(items) {
-  const existing = new Set(state.wallpapers.map((item) => item.id));
-  const fresh = items.filter((item) => !existing.has(item.id));
-  state.wallpapers = [...state.wallpapers, ...fresh];
-  saveCollectedWallpapers();
-  return fresh.length;
-}
-
-async function collectFromCommons(topic, page) {
+async function searchGithub(query) {
   const params = new URLSearchParams({
-    origin: "*",
-    action: "query",
-    format: "json",
-    generator: "search",
-    gsrnamespace: "6",
-    gsrlimit: "12",
-    gsroffset: String((page - 1) * 12),
-    gsrsearch: topic.query,
-    prop: "imageinfo",
-    iiprop: "url|size|mime|extmetadata",
-    iiurlwidth: "1400",
+    q: query,
+    sort: "updated",
+    order: "desc",
+    per_page: "12",
   });
 
-  const response = await fetch(`https://commons.wikimedia.org/w/api.php?${params}`);
-  if (!response.ok) throw new Error("Commons request failed");
+  const response = await fetch(`https://api.github.com/search/repositories?${params}`, {
+    headers: { Accept: "application/vnd.github+json" },
+  });
+
+  if (!response.ok) {
+    throw new Error(`GitHub 搜索失败：${response.status}`);
+  }
+
   const data = await response.json();
-  const pages = Object.values(data.query?.pages || {});
-
-  return pages
-    .map((pageInfo) => {
-      const image = pageInfo.imageinfo?.[0];
-      if (!image || !image.mime?.startsWith("image/")) return null;
-      if (image.width < 1400 || image.height < 800) return null;
-
-      const meta = image.extmetadata || {};
-      const title = cleanTitle(meta.ObjectName?.value || pageInfo.title.replace(/^File:/, ""), topic.category);
-      const author = cleanTitle(meta.Artist?.value?.replace(/<[^>]+>/g, ""), "Wikimedia Commons");
-
-      return {
-        id: `commons-${pageInfo.pageid}`,
-        title,
-        category: topic.category,
-        resolution: `${image.width} x ${image.height}`,
-        tone: wallpaperTone(image.width, image.height),
-        source: "Wikimedia Commons",
-        author,
-        tags: uniqueTags([...topic.tags, ...resolutionTags(image.width, image.height), ...titleTags(title), "开放图片"]),
-        url: image.thumburl || image.url,
-        pageUrl: image.descriptionurl,
-      };
-    })
-    .filter(Boolean);
+  return (data.items || []).map(repoToSource);
 }
 
-async function collectFromPicsum(page) {
-  const response = await fetch(`https://picsum.photos/v2/list?page=${page}&limit=24`);
-  if (!response.ok) throw new Error("Picsum request failed");
-  const items = await response.json();
-
-  return items
-    .filter((item) => Number(item.width) >= 1400 && Number(item.height) >= 800)
-    .map((item) => ({
-      id: `picsum-${item.id}`,
-      title: `摄影壁纸 ${item.id}`,
-      category: "摄影",
-      resolution: `${item.width} x ${item.height}`,
-      tone: wallpaperTone(Number(item.width), Number(item.height)),
-      source: "Picsum",
-      author: item.author,
-      tags: uniqueTags(["摄影", "随机", "高清", ...resolutionTags(Number(item.width), Number(item.height)), item.author]),
-      url: `https://picsum.photos/id/${item.id}/2400/1350`,
-      pageUrl: item.url,
-    }));
-}
-
-function collectFromGeneratedSource(topic, page) {
-  if (!topic.fallback) return [];
-
-  return Array.from({ length: 10 }, (_, index) => {
-    const lock = page * 100 + index + topic.category.length * 13;
-    return {
-      id: `generated-${topic.category}-${topic.fallback}-${lock}`,
-      title: `${topic.category}壁纸 ${lock}`,
-      category: topic.category,
-      resolution: "2400 x 1350",
-      tone: "宽屏",
-      source: "动态搜集",
-      author: "LoremFlickr",
-      tags: uniqueTags([...topic.tags, "高清", "宽屏", "自动搜集", "wallpaper"]),
-      url: `https://loremflickr.com/2400/1350/${topic.fallback}?lock=${lock}`,
-      pageUrl: "https://loremflickr.com/",
-    };
-  });
-}
-
-async function collectWallpapers(reason = "auto") {
+async function refreshSources(reason = "auto") {
   if (state.loading) return;
 
   state.loading = true;
-  collectorStatus.textContent = reason === "scroll" ? "滚动触发，正在自动加载更多..." : "正在自动搜集壁纸...";
+  refreshButton.disabled = true;
+  collectorStatus.textContent = reason === "manual" ? "正在从 GitHub 立即更新..." : "正在从 GitHub 自动搜集...";
+  syncIcons();
 
   try {
-    const page = state.page;
-    const topicRequests = collectorTopics.map((topic) => collectFromCommons(topic, page));
-    const results = await Promise.allSettled([...topicRequests, collectFromPicsum(page)]);
-    const generatedItems = collectorTopics.flatMap((topic) => collectFromGeneratedSource(topic, page));
-    const items = [
-      ...results.flatMap((result) => (result.status === "fulfilled" ? result.value : [])),
-      ...generatedItems,
-    ];
-    const added = upsertWallpapers(items);
+    const settled = await Promise.allSettled(SEARCH_QUERIES.map(searchGithub));
+    const successful = settled.filter((result) => result.status === "fulfilled");
+    if (!successful.length) {
+      throw new Error("All GitHub searches failed");
+    }
 
-    state.page += 1;
-    state.autoRounds += 1;
-    localStorage.setItem("wallpaperCollectorPage", String(state.page));
-    collectorStatus.textContent = added ? `自动新增 ${added} 张壁纸，滚动到底继续加载` : "这批没有新图，正在等待下一次自动加载";
-    renderFilters();
-    renderGallery();
+    const found = successful.flatMap((result) => result.value);
+    const before = state.sources.length;
+    state.sources = mergeSources([...state.sources, ...found]);
+    state.lastUpdated = new Date().toISOString();
+    localStorage.setItem("clashAtlasLastUpdated", state.lastUpdated);
+    saveSources();
+    render();
+
+    const added = state.sources.length - before;
+    collectorStatus.textContent = added
+      ? `已新增 ${added} 个公开项目，页面会每 10 分钟自动刷新`
+      : "已同步 GitHub，暂时没有新的公开项目";
   } catch (error) {
-    collectorStatus.textContent = "搜集失败，稍后再试";
+    collectorStatus.textContent = "GitHub API 暂时不可用或达到限额，稍后会自动重试";
   } finally {
     state.loading = false;
+    refreshButton.disabled = false;
     syncIcons();
   }
 }
 
-function matchesWallpaper(item) {
+function matchesSource(item) {
   const query = state.query.trim().toLowerCase();
-  const inCategory =
+  const categoryMatched =
     state.category === "全部" ||
     item.category === state.category ||
-    (state.category === "收藏" && state.favorites.has(item.id));
-  const searchable = [item.title, item.category, item.resolution, item.tone, item.source, item.author, ...item.tags]
+    (state.category === "今日更新" && isToday(item.updatedAt)) ||
+    (state.category === "已收藏" && state.favorites.has(item.id));
+
+  const searchable = [item.name, item.category, item.description, item.source, item.url, item.repoUrl, ...item.tags]
     .join(" ")
     .toLowerCase();
 
-  return inCategory && (!query || searchable.includes(query));
+  return categoryMatched && (!query || searchable.includes(query));
 }
 
 function renderFilters() {
@@ -323,77 +224,89 @@ function renderFilters() {
       `,
     )
     .join("");
-  syncIcons();
 }
 
-function renderGallery() {
-  const items = state.wallpapers.filter(matchesWallpaper);
+function renderSources() {
+  const items = state.sources.filter(matchesSource);
   resultCount.textContent = String(items.length);
-  totalCount.textContent = String(state.wallpapers.length);
+  totalCount.textContent = String(state.sources.length);
   favoriteCount.textContent = String(state.favorites.size);
+  lastUpdated.textContent = formatTime(state.lastUpdated);
 
   if (!items.length) {
-    gallery.innerHTML = '<div class="empty-state">没有找到匹配的壁纸，换个关键词试试，页面会继续自动搜集。</div>';
+    sourceGrid.innerHTML = '<div class="empty-state">没有找到匹配项目。换个关键词试试，或点击“立即更新”。</div>';
     return;
   }
 
-  gallery.innerHTML = items
+  sourceGrid.innerHTML = items
     .map((item) => {
       const favorite = state.favorites.has(item.id);
+      const stars = Number.isFinite(item.stars) ? `${item.stars.toLocaleString("zh-CN")} stars` : item.source;
+
       return `
-        <article class="wallpaper-card">
-          <img src="${item.url}" alt="${item.title}" loading="lazy" referrerpolicy="no-referrer" />
-          <div class="card-body">
-            <div class="card-title-row">
-              <div>
-                <h2>${item.title}</h2>
-                <p class="card-meta">${item.category} · ${item.resolution} · ${item.source}</p>
-              </div>
+        <article class="source-card">
+          <div class="card-head">
+            <div>
+              <p class="eyebrow">${item.category}</p>
+              <h2>${escapeHtml(item.name)}</h2>
             </div>
-            <div class="tag-row">
-              ${item.tags.map((tag) => `<span class="tag">${tag}</span>`).join("")}
-            </div>
-            <div class="card-actions">
-              <button class="favorite-button ${favorite ? "active" : ""}" type="button" data-favorite="${item.id}" title="收藏">
-                <i data-lucide="star"></i>
-              </button>
-              <button class="preview-button" type="button" data-preview="${item.id}">
-                <i data-lucide="maximize-2"></i>
-                <span>预览</span>
-              </button>
-            </div>
+            <button class="favorite-button ${favorite ? "active" : ""}" type="button" data-favorite="${item.id}" title="收藏">
+              <i data-lucide="star"></i>
+            </button>
+          </div>
+          <p class="description">${escapeHtml(item.description)}</p>
+          <div class="meta-row">
+            <span><i data-lucide="calendar-clock"></i>${formatDate(item.updatedAt)}</span>
+            <span><i data-lucide="star"></i>${stars}</span>
+          </div>
+          <div class="tag-row">
+            ${item.tags.map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join("")}
+          </div>
+          <div class="card-actions">
+            <a class="action-button primary" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">
+              <i data-lucide="external-link"></i>
+              <span>打开入口</span>
+            </a>
+            <a class="action-button" href="${escapeAttribute(item.repoUrl)}" target="_blank" rel="noreferrer">
+              <i data-lucide="github"></i>
+              <span>查看仓库</span>
+            </a>
+            <button class="action-button" type="button" data-copy="${escapeAttribute(item.url)}">
+              <i data-lucide="copy"></i>
+              <span>复制链接</span>
+            </button>
           </div>
         </article>
       `;
     })
     .join("");
+}
 
+function render() {
+  renderFilters();
+  renderSources();
   syncIcons();
 }
 
-function openPreview(id) {
-  const item = state.wallpapers.find((wallpaper) => wallpaper.id === id);
-  if (!item) return;
-
-  previewImage.src = item.url;
-  previewImage.alt = item.title;
-  previewTitle.textContent = item.title;
-  previewCategory.textContent = item.category;
-  previewMeta.textContent = `${item.resolution} · ${item.tone} · ${item.author}`;
-  openSource.href = item.pageUrl || item.url;
-  copyLink.dataset.url = item.url;
-  previewDialog.showModal();
-  syncIcons();
+function escapeHtml(value) {
+  return String(value || "").replace(/[&<>"']/g, (char) => {
+    const map = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" };
+    return map[char];
+  });
 }
 
-async function copyWallpaperUrl(url) {
+function escapeAttribute(value) {
+  return escapeHtml(value).replace(/`/g, "&#096;");
+}
+
+async function copyText(value) {
   if (navigator.clipboard && window.isSecureContext) {
-    await navigator.clipboard.writeText(url);
+    await navigator.clipboard.writeText(value);
     return;
   }
 
   const input = document.createElement("input");
-  input.value = url;
+  input.value = value;
   input.setAttribute("readonly", "");
   input.style.position = "fixed";
   input.style.opacity = "0";
@@ -407,13 +320,12 @@ categoryFilters.addEventListener("click", (event) => {
   const button = event.target.closest("[data-category]");
   if (!button) return;
   state.category = button.dataset.category;
-  renderFilters();
-  renderGallery();
+  render();
 });
 
-gallery.addEventListener("click", (event) => {
+sourceGrid.addEventListener("click", async (event) => {
   const favoriteButton = event.target.closest("[data-favorite]");
-  const previewButton = event.target.closest("[data-preview]");
+  const copyButton = event.target.closest("[data-copy]");
 
   if (favoriteButton) {
     const id = favoriteButton.dataset.favorite;
@@ -423,67 +335,42 @@ gallery.addEventListener("click", (event) => {
       state.favorites.add(id);
     }
     saveFavorites();
-    renderGallery();
+    render();
   }
 
-  if (previewButton) {
-    openPreview(previewButton.dataset.preview);
+  if (copyButton) {
+    await copyText(copyButton.dataset.copy);
+    copyButton.querySelector("span").textContent = "已复制";
+    setTimeout(() => {
+      copyButton.querySelector("span").textContent = "复制链接";
+    }, 1300);
   }
 });
 
 searchInput.addEventListener("input", (event) => {
   state.query = event.target.value;
-  renderGallery();
+  renderSources();
+  syncIcons();
 });
 
-closePreview.addEventListener("click", () => previewDialog.close());
-
-previewDialog.addEventListener("click", (event) => {
-  if (event.target === previewDialog) {
-    previewDialog.close();
-  }
-});
-
-copyLink.addEventListener("click", async () => {
-  await copyWallpaperUrl(copyLink.dataset.url);
-  copyLink.querySelector("span").textContent = "已复制";
-  setTimeout(() => {
-    copyLink.querySelector("span").textContent = "复制链接";
-  }, 1400);
-});
+refreshButton.addEventListener("click", () => refreshSources("manual"));
 
 themeToggle.addEventListener("click", () => {
   const root = document.documentElement;
   const next = root.dataset.theme === "dark" ? "light" : "dark";
   root.dataset.theme = next;
-  localStorage.setItem("wallpaperTheme", next);
+  localStorage.setItem(THEME_KEY, next);
   themeToggle.innerHTML = `<i data-lucide="${next === "dark" ? "sun" : "moon"}"></i>`;
   syncIcons();
 });
 
-document.documentElement.dataset.theme = localStorage.getItem("wallpaperTheme") || "light";
+document.documentElement.dataset.theme = localStorage.getItem(THEME_KEY) || "light";
 themeToggle.innerHTML = `<i data-lucide="${document.documentElement.dataset.theme === "dark" ? "sun" : "moon"}"></i>`;
-renderFilters();
-renderGallery();
-syncIcons();
-collectorStatus.textContent =
-  state.wallpapers.length >= 80 ? `已自动缓存 ${state.wallpapers.length} 张，滚动到底继续加载` : "正在自动搜集壁纸...";
 
-const observer = new IntersectionObserver(
-  (entries) => {
-    if (entries.some((entry) => entry.isIntersecting)) {
-      collectWallpapers("scroll");
-    }
-  },
-  { rootMargin: "900px 0px" },
-);
+render();
+collectorStatus.textContent = state.lastUpdated
+  ? `已加载缓存，最近更新于 ${formatTime(state.lastUpdated)}`
+  : "正在从 GitHub 搜集公开项目...";
 
-observer.observe(loadSentinel);
-
-async function startAutoCollector() {
-  while (state.wallpapers.length < 80 && state.autoRounds < 4) {
-    await collectWallpapers("auto");
-  }
-}
-
-startAutoCollector();
+refreshSources("auto");
+setInterval(() => refreshSources("auto"), REFRESH_INTERVAL_MS);

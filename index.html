@@ -3,24 +3,22 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Wallpaper Atlas | 自动壁纸搜集站</title>
+    <title>Clash Atlas | GitHub 免费订阅源导航</title>
     <meta
       name="description"
-      content="一个适合部署到 GitHub Pages 的自动壁纸搜集网站，支持在线搜集、搜索、分类筛选、收藏和预览。"
+      content="自动从 GitHub 搜集公开 Clash 免费订阅项目和站点入口，支持搜索、筛选、收藏和定时刷新。"
     />
-    <link rel="preconnect" href="https://commons.wikimedia.org" />
-    <link rel="preconnect" href="https://picsum.photos" />
     <link rel="stylesheet" href="./styles.css" />
     <script defer src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
     <script defer src="./script.js"></script>
   </head>
   <body>
     <header class="topbar">
-      <a class="brand" href="#" aria-label="Wallpaper Atlas 首页">
-        <span class="brand-mark">WA</span>
+      <a class="brand" href="#" aria-label="Clash Atlas 首页">
+        <span class="brand-mark">CA</span>
         <span>
-          <strong>Wallpaper Atlas</strong>
-          <small>Auto wallpaper collector</small>
+          <strong>Clash Atlas</strong>
+          <small>GitHub free Clash index</small>
         </span>
       </a>
 
@@ -44,67 +42,62 @@
     <main>
       <section class="control-band" aria-labelledby="pageTitle">
         <div class="intro">
-          <p class="eyebrow">自动搜集电脑壁纸</p>
-          <h1 id="pageTitle">打开网站就会继续收集高清壁纸</h1>
-          <p>参考常见 wallpaper 分类，从开放图片源按主题自动抓取适合桌面的图片，可搜索、筛选和收藏。</p>
+          <p class="eyebrow">实时搜集公开 GitHub 项目</p>
+          <h1 id="pageTitle">Clash 免费订阅站点自动导航</h1>
+          <p>
+            页面会从 GitHub 搜索公开项目，合并内置种子源，并定时刷新最近更新的免费订阅入口。
+            所有结果都来自公开仓库，请自行确认可用性和合规性。
+          </p>
         </div>
 
         <div class="search-panel" role="search">
           <label class="search-box" for="searchInput">
             <i data-lucide="search"></i>
-            <input id="searchInput" type="search" placeholder="搜索：美女、人像、山川、城市、极简、天空..." autocomplete="off" />
+            <input id="searchInput" type="search" placeholder="搜索：clash、订阅、机场、节点、yaml、daily..." autocomplete="off" />
           </label>
 
           <div class="filter-row" id="categoryFilters" aria-label="分类筛选"></div>
 
           <div class="collector-bar">
-            <i data-lucide="refresh-cw"></i>
-            <span id="collectorStatus" role="status">正在准备自动搜集</span>
+            <div class="status-line">
+              <i data-lucide="refresh-cw"></i>
+              <span id="collectorStatus" role="status">正在准备从 GitHub 搜集</span>
+            </div>
+            <button class="action-button primary" id="refreshButton" type="button">
+              <i data-lucide="rotate-cw"></i>
+              <span>立即更新</span>
+            </button>
           </div>
         </div>
       </section>
 
-      <section class="stats-band" aria-label="壁纸统计">
+      <section class="stats-band" aria-label="站点统计">
         <div>
           <strong id="resultCount">0</strong>
           <span>当前结果</span>
         </div>
         <div>
           <strong id="totalCount">0</strong>
-          <span>已搜集</span>
+          <span>已收集</span>
         </div>
         <div>
           <strong id="favoriteCount">0</strong>
           <span>已收藏</span>
         </div>
+        <div>
+          <strong id="lastUpdated">--</strong>
+          <span>最近更新</span>
+        </div>
       </section>
 
-      <section class="gallery" id="gallery" aria-label="壁纸列表"></section>
-      <div class="load-sentinel" id="loadSentinel" aria-hidden="true"></div>
-    </main>
+      <section class="notice-band">
+        <i data-lucide="shield-alert"></i>
+        <p>
+          本站只聚合公开 GitHub 项目入口，不托管、不检测、不转发代理节点。免费订阅常会失效，请优先查看项目 README 和更新日期。
+        </p>
+      </section>
 
-    <dialog class="preview" id="previewDialog" aria-labelledby="previewTitle">
-      <button class="close-button" id="closePreview" type="button" title="关闭">
-        <i data-lucide="x"></i>
-      </button>
-      <img id="previewImage" alt="" />
-      <div class="preview-info">
-        <div>
-          <p class="eyebrow" id="previewCategory"></p>
-          <h2 id="previewTitle"></h2>
-          <p id="previewMeta"></p>
-        </div>
-        <div class="preview-actions">
-          <a class="action-button" id="openSource" target="_blank" rel="noreferrer">
-            <i data-lucide="external-link"></i>
-            <span>打开原图</span>
-          </a>
-          <button class="action-button" id="copyLink" type="button">
-            <i data-lucide="copy"></i>
-            <span>复制链接</span>
-          </button>
-        </div>
-      </div>
-    </dialog>
+      <section class="source-grid" id="sourceGrid" aria-label="Clash 站点列表"></section>
+    </main>
   </body>
 </html>

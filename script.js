@@ -35,23 +35,51 @@ const seedWallpapers = [
     url: "https://images.unsplash.com/photo-1557682250-33bd709cbe85?auto=format&fit=crop&w=2400&q=85",
     pageUrl: "https://unsplash.com/",
   },
+  {
+    id: "seed-beauty-portrait",
+    title: "自然光人像",
+    category: "美女",
+    resolution: "3840 x 2160",
+    tone: "人像",
+    source: "精选",
+    author: "Unsplash",
+    tags: ["美女", "人像", "自然光", "写真", "4K"],
+    url: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=2400&h=1350&q=85",
+    pageUrl: "https://unsplash.com/",
+  },
 ];
 
 const collectorTopics = [
-  { category: "自然", query: "landscape wallpaper mountains forest lake", tags: ["自然", "山川", "森林"] },
-  { category: "城市", query: "city skyline night architecture wallpaper", tags: ["城市", "建筑", "夜景"] },
-  { category: "天空", query: "aurora stars clouds sky wallpaper", tags: ["天空", "星空", "极光"] },
-  { category: "海洋", query: "ocean coast wave beach wallpaper", tags: ["海洋", "海岸", "波浪"] },
-  { category: "极简", query: "minimal abstract gradient texture wallpaper", tags: ["极简", "抽象", "纹理"] },
-  { category: "工作区", query: "desk setup workspace computer wallpaper", tags: ["工作区", "桌面", "效率"] },
+  {
+    category: "美女",
+    query: "beautiful woman portrait wallpaper fashion model",
+    tags: ["美女", "人像", "模特", "写真", "时尚"],
+    fallback: "woman,portrait,fashion",
+  },
+  {
+    category: "美女",
+    query: "female portrait natural light wallpaper",
+    tags: ["美女", "人像", "自然光", "清新", "摄影"],
+    fallback: "woman,portrait,natural",
+  },
+  { category: "自然", query: "landscape wallpaper mountains forest lake 4k", tags: ["自然", "山川", "森林", "湖泊", "4K"] },
+  { category: "城市", query: "city skyline night architecture wallpaper 4k", tags: ["城市", "建筑", "夜景", "天际线", "4K"] },
+  { category: "天空", query: "aurora stars clouds sky wallpaper 4k", tags: ["天空", "星空", "极光", "云层", "4K"] },
+  { category: "海洋", query: "ocean coast wave beach wallpaper 4k", tags: ["海洋", "海岸", "波浪", "沙滩", "4K"] },
+  { category: "极简", query: "minimal abstract gradient texture wallpaper 4k", tags: ["极简", "抽象", "纹理", "渐变", "4K"] },
+  { category: "工作区", query: "desk setup workspace computer wallpaper", tags: ["工作区", "桌面", "效率", "电脑", "室内"] },
+  { category: "摄影", query: "photography wallpaper cinematic light 4k", tags: ["摄影", "光影", "电影感", "高清"] },
 ];
+
+const cachedWallpapers = JSON.parse(localStorage.getItem("wallpaperCollectedItems") || "[]");
 
 const state = {
   category: "全部",
   query: "",
   page: Number(localStorage.getItem("wallpaperCollectorPage") || "1"),
   loading: false,
-  wallpapers: [...seedWallpapers],
+  autoRounds: 0,
+  wallpapers: [...seedWallpapers, ...cachedWallpapers],
   favorites: new Set(JSON.parse(localStorage.getItem("wallpaperFavorites") || "[]")),
 };
 
@@ -62,7 +90,7 @@ const resultCount = document.querySelector("#resultCount");
 const totalCount = document.querySelector("#totalCount");
 const favoriteCount = document.querySelector("#favoriteCount");
 const collectorStatus = document.querySelector("#collectorStatus");
-const collectMore = document.querySelector("#collectMore");
+const loadSentinel = document.querySelector("#loadSentinel");
 const previewDialog = document.querySelector("#previewDialog");
 const previewImage = document.querySelector("#previewImage");
 const previewTitle = document.querySelector("#previewTitle");
@@ -103,10 +131,54 @@ function wallpaperTone(width, height) {
   return "竖图裁切";
 }
 
+function resolutionTags(width, height) {
+  const tags = ["高清"];
+  if (width >= 3840 || height >= 2160) tags.push("4K");
+  if (width >= 5120 || height >= 2880) tags.push("5K");
+  if (width / Math.max(height, 1) >= 1.7) tags.push("宽屏");
+  if (height > width) tags.push("竖图");
+  return tags;
+}
+
+function titleTags(title) {
+  const text = title.toLowerCase();
+  const map = [
+    ["portrait", "人像"],
+    ["woman", "美女"],
+    ["female", "美女"],
+    ["fashion", "时尚"],
+    ["model", "模特"],
+    ["mountain", "山川"],
+    ["forest", "森林"],
+    ["city", "城市"],
+    ["night", "夜景"],
+    ["sky", "天空"],
+    ["ocean", "海洋"],
+    ["beach", "沙滩"],
+    ["abstract", "抽象"],
+    ["minimal", "极简"],
+    ["desk", "桌面"],
+    ["workspace", "工作区"],
+  ];
+  return map.filter(([key]) => text.includes(key)).map(([, tag]) => tag);
+}
+
+function uniqueTags(tags) {
+  return [...new Set(tags.filter(Boolean))].slice(0, 9);
+}
+
+function saveCollectedWallpapers() {
+  const collected = state.wallpapers
+    .filter((item) => !item.id.startsWith("seed-"))
+    .slice(-240);
+  localStorage.setItem("wallpaperCollectedItems", JSON.stringify(collected));
+}
+
 function upsertWallpapers(items) {
   const existing = new Set(state.wallpapers.map((item) => item.id));
   const fresh = items.filter((item) => !existing.has(item.id));
   state.wallpapers = [...state.wallpapers, ...fresh];
+  saveCollectedWallpapers();
   return fresh.length;
 }
 
@@ -148,7 +220,7 @@ async function collectFromCommons(topic, page) {
         tone: wallpaperTone(image.width, image.height),
         source: "Wikimedia Commons",
         author,
-        tags: [...topic.tags, "开放图片"],
+        tags: uniqueTags([...topic.tags, ...resolutionTags(image.width, image.height), ...titleTags(title), "开放图片"]),
         url: image.thumburl || image.url,
         pageUrl: image.descriptionurl,
       };
@@ -171,36 +243,59 @@ async function collectFromPicsum(page) {
       tone: wallpaperTone(Number(item.width), Number(item.height)),
       source: "Picsum",
       author: item.author,
-      tags: ["摄影", "随机", "高清"],
+      tags: uniqueTags(["摄影", "随机", "高清", ...resolutionTags(Number(item.width), Number(item.height)), item.author]),
       url: `https://picsum.photos/id/${item.id}/2400/1350`,
       pageUrl: item.url,
     }));
 }
 
-async function collectWallpapers() {
+function collectFromGeneratedSource(topic, page) {
+  if (!topic.fallback) return [];
+
+  return Array.from({ length: 10 }, (_, index) => {
+    const lock = page * 100 + index + topic.category.length * 13;
+    return {
+      id: `generated-${topic.category}-${topic.fallback}-${lock}`,
+      title: `${topic.category}壁纸 ${lock}`,
+      category: topic.category,
+      resolution: "2400 x 1350",
+      tone: "宽屏",
+      source: "动态搜集",
+      author: "LoremFlickr",
+      tags: uniqueTags([...topic.tags, "高清", "宽屏", "自动搜集", "wallpaper"]),
+      url: `https://loremflickr.com/2400/1350/${topic.fallback}?lock=${lock}`,
+      pageUrl: "https://loremflickr.com/",
+    };
+  });
+}
+
+async function collectWallpapers(reason = "auto") {
   if (state.loading) return;
 
   state.loading = true;
-  collectMore.disabled = true;
-  collectorStatus.textContent = "正在自动搜集壁纸...";
+  collectorStatus.textContent = reason === "scroll" ? "滚动触发，正在自动加载更多..." : "正在自动搜集壁纸...";
 
   try {
     const page = state.page;
     const topicRequests = collectorTopics.map((topic) => collectFromCommons(topic, page));
     const results = await Promise.allSettled([...topicRequests, collectFromPicsum(page)]);
-    const items = results.flatMap((result) => (result.status === "fulfilled" ? result.value : []));
+    const generatedItems = collectorTopics.flatMap((topic) => collectFromGeneratedSource(topic, page));
+    const items = [
+      ...results.flatMap((result) => (result.status === "fulfilled" ? result.value : [])),
+      ...generatedItems,
+    ];
     const added = upsertWallpapers(items);
 
     state.page += 1;
+    state.autoRounds += 1;
     localStorage.setItem("wallpaperCollectorPage", String(state.page));
-    collectorStatus.textContent = added ? `新搜集 ${added} 张壁纸` : "这批没有新图，继续试试";
+    collectorStatus.textContent = added ? `自动新增 ${added} 张壁纸，滚动到底继续加载` : "这批没有新图，正在等待下一次自动加载";
     renderFilters();
     renderGallery();
   } catch (error) {
     collectorStatus.textContent = "搜集失败，稍后再试";
   } finally {
     state.loading = false;
-    collectMore.disabled = false;
     syncIcons();
   }
 }
@@ -238,7 +333,7 @@ function renderGallery() {
   favoriteCount.textContent = String(state.favorites.size);
 
   if (!items.length) {
-    gallery.innerHTML = '<div class="empty-state">没有找到匹配的壁纸，换个关键词或点“继续搜集”。</div>';
+    gallery.innerHTML = '<div class="empty-state">没有找到匹配的壁纸，换个关键词试试，页面会继续自动搜集。</div>';
     return;
   }
 
@@ -341,7 +436,6 @@ searchInput.addEventListener("input", (event) => {
   renderGallery();
 });
 
-collectMore.addEventListener("click", collectWallpapers);
 closePreview.addEventListener("click", () => previewDialog.close());
 
 previewDialog.addEventListener("click", (event) => {
@@ -372,4 +466,24 @@ themeToggle.innerHTML = `<i data-lucide="${document.documentElement.dataset.them
 renderFilters();
 renderGallery();
 syncIcons();
-collectWallpapers();
+collectorStatus.textContent =
+  state.wallpapers.length >= 80 ? `已自动缓存 ${state.wallpapers.length} 张，滚动到底继续加载` : "正在自动搜集壁纸...";
+
+const observer = new IntersectionObserver(
+  (entries) => {
+    if (entries.some((entry) => entry.isIntersecting)) {
+      collectWallpapers("scroll");
+    }
+  },
+  { rootMargin: "900px 0px" },
+);
+
+observer.observe(loadSentinel);
+
+async function startAutoCollector() {
+  while (state.wallpapers.length < 80 && state.autoRounds < 4) {
+    await collectWallpapers("auto");
+  }
+}
+
+startAutoCollector();

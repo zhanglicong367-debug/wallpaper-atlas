@@ -46,23 +46,20 @@
         <div class="intro">
           <p class="eyebrow">自动搜集电脑壁纸</p>
           <h1 id="pageTitle">打开网站就会继续收集高清壁纸</h1>
-          <p>从开放图片源按主题抓取适合桌面的图片，可搜索、筛选、收藏，并继续加载更多。</p>
+          <p>参考常见 wallpaper 分类，从开放图片源按主题自动抓取适合桌面的图片，可搜索、筛选和收藏。</p>
         </div>
 
         <div class="search-panel" role="search">
           <label class="search-box" for="searchInput">
             <i data-lucide="search"></i>
-            <input id="searchInput" type="search" placeholder="搜索：山川、城市、极简、天空、工作区..." autocomplete="off" />
+            <input id="searchInput" type="search" placeholder="搜索：美女、人像、山川、城市、极简、天空..." autocomplete="off" />
           </label>
 
           <div class="filter-row" id="categoryFilters" aria-label="分类筛选"></div>
 
           <div class="collector-bar">
-            <button class="action-button primary" id="collectMore" type="button">
-              <i data-lucide="refresh-cw"></i>
-              <span>继续搜集</span>
-            </button>
-            <span id="collectorStatus" role="status">准备搜集壁纸</span>
+            <i data-lucide="refresh-cw"></i>
+            <span id="collectorStatus" role="status">正在准备自动搜集</span>
           </div>
         </div>
       </section>
@@ -83,6 +80,7 @@
       </section>
 
       <section class="gallery" id="gallery" aria-label="壁纸列表"></section>
+      <div class="load-sentinel" id="loadSentinel" aria-hidden="true"></div>
     </main>
 
     <dialog class="preview" id="previewDialog" aria-labelledby="previewTitle">

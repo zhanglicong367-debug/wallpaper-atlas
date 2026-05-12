@@ -91,7 +91,8 @@ input {
 
 .nav-actions,
 .preview-actions,
-.filter-row {
+.filter-row,
+.collector-bar {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -191,6 +192,28 @@ input {
   background: var(--accent);
   color: #042f2e;
   font-weight: 800;
+}
+
+.collector-bar {
+  justify-content: space-between;
+}
+
+.collector-bar #collectorStatus {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.action-button.primary {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+  background: var(--accent);
+  color: #042f2e;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.action-button:disabled {
+  cursor: wait;
+  opacity: 0.68;
 }
 
 .stats-band {
@@ -422,8 +445,13 @@ svg {
   }
 
   .icon-link,
-  .action-button {
+  .action-button,
+  .collector-bar {
     justify-content: center;
+  }
+
+  .collector-bar {
+    display: grid;
   }
 
   .gallery {

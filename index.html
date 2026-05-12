@@ -3,12 +3,13 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Wallpaper Atlas | 电脑壁纸搜集站</title>
+    <title>Wallpaper Atlas | 自动壁纸搜集站</title>
     <meta
       name="description"
-      content="一个适合托管到 GitHub Pages 的电脑壁纸搜集网站，支持搜索、分类筛选、收藏和预览。"
+      content="一个适合部署到 GitHub Pages 的自动壁纸搜集网站，支持在线搜集、搜索、分类筛选、收藏和预览。"
     />
-    <link rel="preconnect" href="https://images.unsplash.com" />
+    <link rel="preconnect" href="https://commons.wikimedia.org" />
+    <link rel="preconnect" href="https://picsum.photos" />
     <link rel="stylesheet" href="./styles.css" />
     <script defer src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
     <script defer src="./script.js"></script>
@@ -19,12 +20,18 @@
         <span class="brand-mark">WA</span>
         <span>
           <strong>Wallpaper Atlas</strong>
-          <small>Desktop collections</small>
+          <small>Auto wallpaper collector</small>
         </span>
       </a>
 
       <nav class="nav-actions" aria-label="主要操作">
-        <a class="icon-link" href="https://github.com/" target="_blank" rel="noreferrer" title="GitHub">
+        <a
+          class="icon-link"
+          href="https://github.com/zhanglicong367-debug/wallpaper-atlas"
+          target="_blank"
+          rel="noreferrer"
+          title="GitHub 仓库"
+        >
           <i data-lucide="github"></i>
           <span>GitHub</span>
         </a>
@@ -37,18 +44,26 @@
     <main>
       <section class="control-band" aria-labelledby="pageTitle">
         <div class="intro">
-          <p class="eyebrow">精选电脑壁纸库</p>
-          <h1 id="pageTitle">收藏适合桌面的高清壁纸</h1>
-          <p>按风格、色调和分辨率快速筛选，打开预览后即可保存图片链接。</p>
+          <p class="eyebrow">自动搜集电脑壁纸</p>
+          <h1 id="pageTitle">打开网站就会继续收集高清壁纸</h1>
+          <p>从开放图片源按主题抓取适合桌面的图片，可搜索、筛选、收藏，并继续加载更多。</p>
         </div>
 
         <div class="search-panel" role="search">
           <label class="search-box" for="searchInput">
             <i data-lucide="search"></i>
-            <input id="searchInput" type="search" placeholder="搜索：山川、极简、城市、4K..." autocomplete="off" />
+            <input id="searchInput" type="search" placeholder="搜索：山川、城市、极简、天空、工作区..." autocomplete="off" />
           </label>
 
           <div class="filter-row" id="categoryFilters" aria-label="分类筛选"></div>
+
+          <div class="collector-bar">
+            <button class="action-button primary" id="collectMore" type="button">
+              <i data-lucide="refresh-cw"></i>
+              <span>继续搜集</span>
+            </button>
+            <span id="collectorStatus" role="status">准备搜集壁纸</span>
+          </div>
         </div>
       </section>
 
@@ -58,12 +73,12 @@
           <span>当前结果</span>
         </div>
         <div>
-          <strong id="favoriteCount">0</strong>
-          <span>已收藏</span>
+          <strong id="totalCount">0</strong>
+          <span>已搜集</span>
         </div>
         <div>
-          <strong>4K+</strong>
-          <span>优先展示</span>
+          <strong id="favoriteCount">0</strong>
+          <span>已收藏</span>
         </div>
       </section>
 

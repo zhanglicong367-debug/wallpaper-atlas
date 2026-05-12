@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Wallpaper Atlas | 电脑壁纸搜集站</title>
+    <meta
+      name="description"
+      content="一个适合托管到 GitHub Pages 的电脑壁纸搜集网站，支持搜索、分类筛选、收藏和预览。"
+    />
+    <link rel="preconnect" href="https://images.unsplash.com" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script defer src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script defer src="./script.js"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Wallpaper Atlas 首页">
+        <span class="brand-mark">WA</span>
+        <span>
+          <strong>Wallpaper Atlas</strong>
+          <small>Desktop collections</small>
+        </span>
+      </a>
+
+      <nav class="nav-actions" aria-label="主要操作">
+        <a class="icon-link" href="https://github.com/" target="_blank" rel="noreferrer" title="GitHub">
+          <i data-lucide="github"></i>
+          <span>GitHub</span>
+        </a>
+        <button class="icon-button" id="themeToggle" type="button" title="切换主题">
+          <i data-lucide="moon"></i>
+        </button>
+      </nav>
+    </header>
+
+    <main>
+      <section class="control-band" aria-labelledby="pageTitle">
+        <div class="intro">
+          <p class="eyebrow">精选电脑壁纸库</p>
+          <h1 id="pageTitle">收藏适合桌面的高清壁纸</h1>
+          <p>按风格、色调和分辨率快速筛选，打开预览后即可保存图片链接。</p>
+        </div>
+
+        <div class="search-panel" role="search">
+          <label class="search-box" for="searchInput">
+            <i data-lucide="search"></i>
+            <input id="searchInput" type="search" placeholder="搜索：山川、极简、城市、4K..." autocomplete="off" />
+          </label>
+
+          <div class="filter-row" id="categoryFilters" aria-label="分类筛选"></div>
+        </div>
+      </section>
+
+      <section class="stats-band" aria-label="壁纸统计">
+        <div>
+          <strong id="resultCount">0</strong>
+          <span>当前结果</span>
+        </div>
+        <div>
+          <strong id="favoriteCount">0</strong>
+          <span>已收藏</span>
+        </div>
+        <div>
+          <strong>4K+</strong>
+          <span>优先展示</span>
+        </div>
+      </section>
+
+      <section class="gallery" id="gallery" aria-label="壁纸列表"></section>
+    </main>
+
+    <dialog class="preview" id="previewDialog" aria-labelledby="previewTitle">
+      <button class="close-button" id="closePreview" type="button" title="关闭">
+        <i data-lucide="x"></i>
+      </button>
+      <img id="previewImage" alt="" />
+      <div class="preview-info">
+        <div>
+          <p class="eyebrow" id="previewCategory"></p>
+          <h2 id="previewTitle"></h2>
+          <p id="previewMeta"></p>
+        </div>
+        <div class="preview-actions">
+          <a class="action-button" id="openSource" target="_blank" rel="noreferrer">
+            <i data-lucide="external-link"></i>
+            <span>打开原图</span>
+          </a>
+          <button class="action-button" id="copyLink" type="button">
+            <i data-lucide="copy"></i>
+            <span>复制链接</span>
+          </button>
+        </div>
+      </div>
+    </dialog>
+  </body>
+</html>
